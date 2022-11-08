@@ -24,6 +24,27 @@ private fun printPlayerStatus(player: Player){
 object Game {
     val player = Player("Madrigal", 89,true, false)
     var currentRoom: Room = TownSquare()
+
+    private var worldMap =  listOf(
+        listOf(currentRoom, Room("Tavern"), Room("Back Room")),
+        listOf(Room("Long Corridor"), Room("Generic Room"))
+    )
+
+    private fun move(directionInput: String) =
+        try {
+            val direction = Direction.valueOf(directionInput.toUpperCase())
+            val newPosition = direction.updateCoordinate(player.currentPosition)
+            if (!newPosition.isInBounds)
+                throw IllegalStateException("$direction out of Bounds")
+            val newRoom = worldMap[newPosition.y][newPosition.x]
+            player.currentPosition = newPosition
+            currentRoom = newRoom
+            "OK, you move $direction to the ${newRoom.name}.\n${newRoom.load()}"
+        }
+        catch (e: Exception){
+            "Invalid direction: $directionInput."
+        }
+
     init {
         println("Welcome, adventurer")
         player.castFireball()
@@ -44,10 +65,11 @@ object Game {
     }
     private class GameInput(arg: String?){
         private val input = arg?: ""
-        val command = input.split("")[0]
-        val argument = input.split("").getOrElse(1, {" "})
+        val command = input.split(" ")[0]
+        val argument = input.split(" ").getOrElse(1, { "" })
 
         fun processCommand() = when (command.toLowerCase()) {
+            "move" -> move(argument)
             else -> commandNotFound()
         }
 
