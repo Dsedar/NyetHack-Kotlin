@@ -1,19 +1,33 @@
 package com.bignerdranch.nyethack
 
+import java.io.File
+import kotlin.random.Random
+
 class Player(_name: String,
-             _healthPoints: Int,
-             _isBlessed: Boolean,
-             _isImmortal:Boolean) {
+             override var healthPoints: Int = 100,
+             val isBlessed: Boolean,
+             private var isImmortal:Boolean): Fightable {
     var name = _name
-        get() = field.capitalize()
+        get() = "${field.capitalize()} of $hometown"
         private set(value) {
             field = value.trim()
         }
-    var healthPoints = _healthPoints
-    val isBlessed = _isBlessed
-    private val isImmortal = _isImmortal
-    var currentPosition = Coordinate(0,0)
 
+    val hometown by lazy { selectHomeTown() }
+
+    init {
+        require(healthPoints > 0, {" Health points must be greater than zero."})
+        require(name.isNotBlank(), {" Player must have a name"})
+    }
+
+    var currentPosition = Coordinate(0,0)
+    
+    constructor  (name: String): this(name,
+                                isBlessed = true,
+                                isImmortal = false){
+        if (name.toLowerCase() == "kar") healthPoints = 40
+    }
+    
     fun auraColor(): String {
         val auraVisible = isBlessed && healthPoints > 50 || isImmortal
         val auraColor = if (auraVisible) "Зеленая" else "Красная"
@@ -33,6 +47,24 @@ class Player(_name: String,
             else -> ", вы до сих пор не умерли?"
         }
 
+    private fun selectHomeTown() = File("data/towns.txt")
+        .readText()
+        .split("\n")
+        .shuffled()
+        .first()
+
     fun castFireball (numFireballs: Int = 2) =
         println("A glass of Fireball springs into existence. (x$numFireballs)")
+
+    override val diceCount: Int =3
+    override val diceSides: Int = 6
+    override fun attack(opponent: Fightable): Int {
+        val damageDealt = if (isBlessed) {
+            damageRoll * 2
+        } else {
+            damageRoll
+        }
+        opponent.healthPoints -= damageDealt
+        return damageDealt
+    }
 }
