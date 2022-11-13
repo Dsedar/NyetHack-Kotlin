@@ -7,7 +7,6 @@ const val TAVERN_NAME = "Taernyl's Folly"
 
 val patronList = mutableListOf("Eli", "Mordoc", "Sophie")
 val lastName = listOf("Ironfoot", "Fernsworth", "Baggins")
-val uniguePatrons = mutableSetOf<String>()
 val menuList = File("data/tavern-menu-items.txt")
         .readText()
         .split("\n")
@@ -27,12 +26,12 @@ private fun String.toDragonSpeak() {
 }
 
 fun main(args: Array<String>) {
-    (0..9).forEach{
+    val uniguePatrons: Set<String> = generateSequence {
         val first = patronList.random()
         val last = lastName.random()
-        val name = "$first $last"
-        uniguePatrons += name
-    }
+        "$first $last"
+    }.take(10).toSet()
+
     uniguePatrons.forEach{
         patronGold[it] = 6.0
     }
